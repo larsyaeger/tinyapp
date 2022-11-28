@@ -4,7 +4,7 @@ const PORT  = 8080;
 
 app.set('view engine', 'ejs');
 
-const urlDataBase = {
+const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com'
 };
@@ -15,10 +15,14 @@ app.get('/', (req, res) => {
 });
 app.get('/urls.json', (req, res) => {
   
-  res.json(urlDataBase);
+  res.json(urlDatabase);
 });
 app.get('/hello', (req, res) => {
   res.send("<html><body>No <b>Thanks</b></body></html>\n")
+});
+app.get('/urls', (req, res) => {
+  const templateVars = {urls: urlDatabase};
+  res.render('urls_index', templateVars);
 });
 
 app.listen(PORT, () => {
