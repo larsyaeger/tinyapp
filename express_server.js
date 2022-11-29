@@ -1,3 +1,6 @@
+const generateRandomString = () => {
+  
+}
 const express = require('express');
 const app = express()
 const PORT  = 8080;
@@ -9,6 +12,10 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com'
 };
 app.use(express.urlencoded({extended: true}));
+app.post('/urls', (req, res) => {
+  console.log(req.body); // --> log the POST request body to the console
+  res.send('Ok'); // --> respond with Ok (TO BE REPLACED later)
+})
 app.get('/', (req, res) => {
   res.send('hello');
   
