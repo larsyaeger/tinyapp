@@ -15,12 +15,15 @@ app.set('view engine', 'ejs');
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
   '9sm5xK': 'http://www.google.com'
+
 };
 app.use(express.urlencoded({extended: true}));
 app.post('/urls', (req, res) => {
   console.log(req.body); // --> log the POST request body to the console
-  res.send(generateRandomString()); // --> respond with Ok (TO BE REPLACED later)
-})
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect(`/urls/${shortURL}`); //--> used to be just ok.
+});
 app.get('/', (req, res) => {
   res.send('hello');
   
