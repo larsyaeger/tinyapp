@@ -14,8 +14,7 @@ app.set('view engine', 'ejs');
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
-
+  '9sm5xK': 'http://www.google.com',
 };
 app.use(express.urlencoded({extended: true}));
 app.post('/urls', (req, res) => {
@@ -45,6 +44,10 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id]};
   res.render('urls_show', templateVars);
+});
+app.get('/u/:id', (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(longURL);
 });
 
 
