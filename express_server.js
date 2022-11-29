@@ -1,5 +1,10 @@
 const generateRandomString = () => {
-  
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
 }
 const express = require('express');
 const app = express()
@@ -14,7 +19,7 @@ const urlDatabase = {
 app.use(express.urlencoded({extended: true}));
 app.post('/urls', (req, res) => {
   console.log(req.body); // --> log the POST request body to the console
-  res.send('Ok'); // --> respond with Ok (TO BE REPLACED later)
+  res.send(generateRandomString()); // --> respond with Ok (TO BE REPLACED later)
 })
 app.get('/', (req, res) => {
   res.send('hello');
