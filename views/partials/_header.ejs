@@ -16,6 +16,17 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <form class="navbar-item" action="/login" method="POST">
+          <label for="username">name =</label>
+          <input
+            class="navbar-item"
+            type="text"
+            name="username"
+            placeholder="username"
+            style="width: 150px; margin: 0em"
+          />
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
       </div>
     </div>
   </nav>

@@ -64,7 +64,13 @@ app.get('/urls/:id/edit', (req, res) => {
   const shortURL = req.params.id
   const templateVars = {id: shortURL, longURL: urlDatabase[shortURL]};
   res.render('urls_show', templateVars);
-})
+});
+app.post('/login', (req, res) => {
+  const userNamejs = req.body.username;
+  //console.log(req.body.username);
+  res.cookie('username', userNamejs);
+  res.redirect('/urls');
+});
 
 
 
