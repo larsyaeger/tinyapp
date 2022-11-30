@@ -6,6 +6,18 @@ const generateRandomString = () => {
   }
   return result;
 }
+const users = {
+  userRandomID: {
+    id: "userRandomId",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomId",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const app = express()
@@ -54,7 +66,21 @@ app.get('/urls/register', (req, res) => {
     username: req.cookies['username'],
   };
   res.render('urls_register', templateVars);
-})
+});
+app.post('/urls/register', (req, res) => {
+  const newUser = req.body;
+  const randomID = generateRandomString();
+  console.log(randomID);
+  console.log(newUser.emailform);
+  console.log(newUser.passwordform);
+  users.randomID = { 
+      id: randomID,
+      email: newUser.emailform,
+      password: newUser.passwordform,
+    }
+  res.cookie('user_id', users.randomID);
+  res.redirect('/urls');
+  });
 app.get('/urls/:id', (req, res) => {
   const templateVars = {
     username: req.cookies['username'],
