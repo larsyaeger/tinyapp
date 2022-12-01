@@ -26,6 +26,14 @@ const emailChecker = (email) => {
   }
   return false;
 }
+const getUserFromEmail = (email) => {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    } 
+  }
+  return [];
+}
 const accountchecker = (email, password) => {
   for (const user in users) {
     if (users[user].email === email) {
@@ -51,9 +59,18 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.post('/urls', (req, res) => {
   console.log(req.body); // --> log the POST request body to the console
-  const shortURL = generateRandomString();
+  const loggedInUser = req.cookies['user_id'];
+  //if user is not logged in, respond with an html message they cant make a url because they need to be logged in 
+  if (loggedInUser) {
+    const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`); //--> used to be just ok.
+  res.redirect(`/urls/${shortURL}`);
+  } else {
+    throw('Cannot create a shortened url because you are not logged in');
+  }
+  // const shortURL = generateRandomString();
+  // urlDatabase[shortURL] = req.body.longURL;
+  // res.redirect(`/urls/${shortURL}`); //--> used to be just ok.
 });
 app.get('/', (req, res) => {
   res.send('hello');
@@ -63,27 +80,44 @@ app.get('/urls.json', (req, res) => {
   
   res.json(urlDatabase);
 });
-app.get('/hello', (req, res) => {
-  res.send("<html><body>No <b>Thanks</b></body></html>\n")
-});
+// app.get('/hello', (req, res) => {
+//   res.send("<html><body>No <b>Thanks</b></body></html>\n")
+// });
 app.get('/urls', (req, res) => {
   const templateVars = {
     user: req.cookies['user_id'],
     urls: urlDatabase,
   };
+  console.log(`I am from get/urls`);
+  console.log(users);
+  console.log(templateVars)
   res.render('urls_index', templateVars);
 });
 app.get('/urls/new', (req, res) => {
   const templateVars = {
     user: req.cookies['user_id'],
   };
+  const loggedInUser = req.cookies['user_id'];
+  //if user is not logged in, any visits to /urls_new should be redirected to /login
+if (loggedInUser) {
   res.render('urls_new', templateVars);
+} else {
+res.redirect('/login');
+}
+  //res.render('urls_new', templateVars);
 });
 app.get('/urls/register', (req, res) => {
   const templateVars = {
     user: req.cookies['user_id'],
   };
+  const loggedInUser = req.cookies['user_id'];
+  //if user is already logged in, any visits to /urls/register should be redirected to /urls
+  if (loggedInUser) {
+    res.redirect('/urls');
+  } else {
   res.render('urls_register', templateVars);
+  }
+  //res.render('urls_register', templateVars);
 });
 app.post('/urls/register', (req, res) => {
   const newUser = req.body;
@@ -97,21 +131,27 @@ app.post('/urls/register', (req, res) => {
     } else if (emailChecker(newUser.registeremailform) === true) {
       throw new Error(`Error ${400}, email already in use`)
     } else {
-        users.randomID = { 
+        users[randomID] = { 
         id: randomID,
         email: newUser.registeremailform,
         password: newUser.registerpasswordform,
       }
-  res.cookie('user_id', users.randomID)
+      console.log(`I am from register`)
+      console.log(users);
+  res.cookie('user_id', users[randomID])
   res.redirect('/urls');
     }
   });
   app.post('/login', (req, res) => {
     const possibleExistingUser = req.body;
+    console.log(`from login`);
     console.log(possibleExistingUser);
-    if (emailChecker(possibleExistingUser.loginemailform) === true) {
+    const loggedInUser = getUserFromEmail(possibleExistingUser.loginemailform)
+    console.log(`loggedInUser function`);
+    console.log(loggedInUser);
+    if (loggedInUser) {
       if (accountchecker(possibleExistingUser.loginemailform, possibleExistingUser.loginpasswordform) === true) {
-        res.cookie('user_id', users.randomID);
+        res.cookie('user_id', loggedInUser);
         res.redirect('/urls');
       } else if (accountchecker(possibleExistingUser.loginemailform, possibleExistingUser.loginpasswordform) === false) {
         throw new Error(`Error ${403}, password doesn't match for that email`)
@@ -159,15 +199,23 @@ app.get('/login', (req, res) => {
   const templateVars = {
     user: req.cookies['user_id]'],
   };
+  const loggedInUser = req.cookies['user_id'];
+  //if user is already logged in, any visits to /login should be redirected to /urls
+  if (loggedInUser) {
+    res.redirect('/urls');
+  } else {
   res.render('login', templateVars);
+  }
 });
 app.post('/register', (req, res) => {
   res.redirect('/urls/register');
 });
 app.post('/logout', (req, res) => {
+  //console.log(user);
   res.clearCookie('user_id');
   res.redirect('/login');
 });
+
 
 
 
