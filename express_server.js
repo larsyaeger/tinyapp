@@ -26,6 +26,16 @@ const emailChecker = (email) => {
   }
   return false;
 }
+const accountchecker = (email, password) => {
+  for (const user in users) {
+    if (users[user].email === email) {
+      if (users[user].password === password) {
+        return true;
+      }
+    } 
+  }
+  return false;
+}
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const app = express()
@@ -82,20 +92,38 @@ app.post('/urls/register', (req, res) => {
   // console.log(randomID);
   // console.log(newUser.emailform);
   // console.log(newUser.passwordform); 
-  if (newUser.emailform === '' || newUser.passwordform === '') {
+  if (newUser.registeremailform === '' || newUser.registerpasswordform === '') {
       throw new Error(`Error ${400}, email and/or password were left blank`)
-    } else if (emailChecker(newUser.emailform) === true) {
-      throw new Error('Error 400, email already in use')
+    } else if (emailChecker(newUser.registeremailform) === true) {
+      throw new Error(`Error ${400}, email already in use`)
     } else {
         users.randomID = { 
         id: randomID,
-        email: newUser.emailform,
-        password: newUser.passwordform,
+        email: newUser.registeremailform,
+        password: newUser.registerpasswordform,
       }
   res.cookie('user_id', users.randomID)
   res.redirect('/urls');
     }
   });
+  app.post('/login', (req, res) => {
+    const possibleExistingUser = req.body;
+    console.log(possibleExistingUser);
+    if (emailChecker(possibleExistingUser.loginemailform) === true) {
+      if (accountchecker(possibleExistingUser.loginemailform, possibleExistingUser.loginpasswordform) === true) {
+        res.cookie('user_id', users.randomID);
+        res.redirect('/urls');
+      } else if (accountchecker(possibleExistingUser.loginemailform, possibleExistingUser.loginpasswordform) === false) {
+        throw new Error(`Error ${403}, password doesn't match for that email`)
+      }
+    } else if (emailChecker(possibleExistingUser.loginemailform) === false) {
+      throw new Error(`Error ${403}, email isn't registered to an account`);
+    }
+    //res.redirect('/login');
+  });
+app.post('/loginbutton', (req, res) => {
+  res.redirect('/login');
+})
 app.get('/urls/:id', (req, res) => {
   const templateVars = {
     user: req.cookies['user_id'],
@@ -133,9 +161,6 @@ app.get('/login', (req, res) => {
   };
   res.render('login', templateVars);
 });
-app.post('/login', (req, res) => {
-  res.redirect('/login');
-});
 app.post('/register', (req, res) => {
   //const userName = req.body.username;
   //console.log(req.body.username);
@@ -144,7 +169,7 @@ app.post('/register', (req, res) => {
 });
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 
