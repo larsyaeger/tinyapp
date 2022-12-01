@@ -174,7 +174,11 @@ app.get('/urls/:id', (req, res) => {
 });
 app.get('/u/:id', (req, res) => {
   const longURL = urlDatabase[req.params.id];
+  if (longURL === undefined) {
+    throw new Error ('That short URL does not yet exist therefor it does not lead to anywhere');
+  } else {
   res.redirect(longURL);
+  }
 });
 app.post('/urls/:id/delete', (req, res) => {
   console.log(req.body);
