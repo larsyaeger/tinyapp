@@ -127,7 +127,16 @@ app.get('/urls/:id/edit', (req, res) => {
     longURL: urlDatabase[shortURL]};
   res.render('urls_show', templateVars);
 });
+app.get('/login', (req, res) => {
+  const templateVars = {
+    user: req.cookies['user_id]'],
+  };
+  res.render('login', templateVars);
+});
 app.post('/login', (req, res) => {
+  res.redirect('/login');
+});
+app.post('/register', (req, res) => {
   //const userName = req.body.username;
   //console.log(req.body.username);
   //res.cookie('username', userName);
