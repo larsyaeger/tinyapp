@@ -18,8 +18,8 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         <% if(user){%>
         <form class="navbar-item" action="/logout" method="POST">
-          <label for="Logout">Logged in as: <%=user.email%></label>
-          <button type="submit" name="Logout" class="btn btn-primary" style="margin: 0em">Logout</button>
+          <label for="LOGOUTBUTTON">Logged in as: <%=user.email%></label>
+          <button type="submit" name="LOGOUTBUTTON" class="btn btn-primary" style="margin: 0em">Logout</button>
         </form>
       </p>
         <%} else {%>
@@ -27,7 +27,7 @@
           <label for="REGISTERBUTTON">For new users:</label>
           <button type="submit" name="REGISTERBUTTON" class="btn btn-primary">Register</button>
         </form>
-        <form class="navbar-item" action="/login" method="POST">
+        <form class="navbar-item" action="/loginbutton" method="POST">
           <label for="LOGINBUTTON">For existing users:</label>
           <button type="submit" name="LOGINBUTTON" class="btn btn-primary">Login</button>
         </form>
