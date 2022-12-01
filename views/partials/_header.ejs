@@ -23,8 +23,13 @@
         </form>
       </p>
         <%} else {%>
+        <form class="navbar-item" action="/register" method="POST">
+          <label for="REGISTERBUTTON">For new users:</label>
+          <button type="submit" name="REGISTERBUTTON" class="btn btn-primary">Register</button>
+        </form>
         <form class="navbar-item" action="/login" method="POST">
-          <button type="submit" class="btn btn-primary">Register</button>
+          <label for="LOGINBUTTON">For existing users:</label>
+          <button type="submit" name="LOGINBUTTON" class="btn btn-primary">Login</button>
         </form>
         <%}%>
       </div>
