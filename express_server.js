@@ -162,9 +162,6 @@ app.get('/login', (req, res) => {
   res.render('login', templateVars);
 });
 app.post('/register', (req, res) => {
-  //const userName = req.body.username;
-  //console.log(req.body.username);
-  //res.cookie('username', userName);
   res.redirect('/urls/register');
 });
 app.post('/logout', (req, res) => {
