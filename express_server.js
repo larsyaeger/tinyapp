@@ -18,6 +18,14 @@ const users = {
     password: "dishwasher-funk",
   },
 };
+const emailChecker = (email) => {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return true;
+    } 
+  }
+  return false;
+}
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const app = express()
@@ -70,16 +78,23 @@ app.get('/urls/register', (req, res) => {
 app.post('/urls/register', (req, res) => {
   const newUser = req.body;
   const randomID = generateRandomString();
-  console.log(randomID);
-  console.log(newUser.emailform);
-  console.log(newUser.passwordform);
-  users.randomID = { 
-      id: randomID,
-      email: newUser.emailform,
-      password: newUser.passwordform,
-    }
+  // console.log(newUser);
+  // console.log(randomID);
+  // console.log(newUser.emailform);
+  // console.log(newUser.passwordform); 
+  if (newUser.emailform === '' || newUser.passwordform === '') {
+      throw new Error(`Error ${400}, email and/or password were left blank`)
+    } else if (emailChecker(newUser.emailform) === true) {
+      throw new Error('Error 400, email already in use')
+    } else {
+        users.randomID = { 
+        id: randomID,
+        email: newUser.emailform,
+        password: newUser.passwordform,
+      }
   res.cookie('user_id', users.randomID)
   res.redirect('/urls');
+    }
   });
 app.get('/urls/:id', (req, res) => {
   const templateVars = {
