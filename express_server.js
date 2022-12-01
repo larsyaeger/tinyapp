@@ -52,25 +52,29 @@ const PORT  = 8080;
 app.set('view engine', 'ejs');
 
 const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com',
+  b2xVn2: {
+    longURL: 'http://www.lighthouselabs.ca',
+    userID: 'userRandomID',
+  },
+  '9sm5xK': {
+    longURL: 'http://www.google.com',
+    userID: 'user2RandomID',
+},
+//  'b2xVn2': 'http://www.lighthouselabs.ca',
+//  '9sm5xK': 'http://www.google.com',
 };
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.post('/urls', (req, res) => {
-  console.log(req.body); // --> log the POST request body to the console
   const loggedInUser = req.cookies['user_id'];
   //if user is not logged in, respond with an html message they cant make a url because they need to be logged in 
   if (loggedInUser) {
     const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
+    urlDatabase[shortURL] = req.body;
+    res.redirect(`/urls/${shortURL}`);
   } else {
     throw('Cannot create a shortened url because you are not logged in');
   }
-  // const shortURL = generateRandomString();
-  // urlDatabase[shortURL] = req.body.longURL;
-  // res.redirect(`/urls/${shortURL}`); //--> used to be just ok.
 });
 app.get('/', (req, res) => {
   res.send('hello');
@@ -80,16 +84,12 @@ app.get('/urls.json', (req, res) => {
   
   res.json(urlDatabase);
 });
-// app.get('/hello', (req, res) => {
-//   res.send("<html><body>No <b>Thanks</b></body></html>\n")
-// });
 app.get('/urls', (req, res) => {
   const templateVars = {
     user: req.cookies['user_id'],
     urls: urlDatabase,
   };
-  console.log(`I am from get/urls`);
-  console.log(users);
+  console.log(`TEMPLATE VARS UNDER THIS`)
   console.log(templateVars)
   res.render('urls_index', templateVars);
 });
@@ -104,7 +104,6 @@ if (loggedInUser) {
 } else {
 res.redirect('/login');
 }
-  //res.render('urls_new', templateVars);
 });
 app.get('/urls/register', (req, res) => {
   const templateVars = {
@@ -117,15 +116,10 @@ app.get('/urls/register', (req, res) => {
   } else {
   res.render('urls_register', templateVars);
   }
-  //res.render('urls_register', templateVars);
 });
 app.post('/urls/register', (req, res) => {
   const newUser = req.body;
   const randomID = generateRandomString();
-  // console.log(newUser);
-  // console.log(randomID);
-  // console.log(newUser.emailform);
-  // console.log(newUser.passwordform); 
   if (newUser.registeremailform === '' || newUser.registerpasswordform === '') {
       throw new Error(`Error ${400}, email and/or password were left blank`)
     } else if (emailChecker(newUser.registeremailform) === true) {
@@ -136,19 +130,13 @@ app.post('/urls/register', (req, res) => {
         email: newUser.registeremailform,
         password: newUser.registerpasswordform,
       }
-      console.log(`I am from register`)
-      console.log(users);
   res.cookie('user_id', users[randomID])
   res.redirect('/urls');
     }
   });
   app.post('/login', (req, res) => {
     const possibleExistingUser = req.body;
-    console.log(`from login`);
-    console.log(possibleExistingUser);
     const loggedInUser = getUserFromEmail(possibleExistingUser.loginemailform)
-    console.log(`loggedInUser function`);
-    console.log(loggedInUser);
     if (loggedInUser) {
       if (accountchecker(possibleExistingUser.loginemailform, possibleExistingUser.loginpasswordform) === true) {
         res.cookie('user_id', loggedInUser);
@@ -168,12 +156,12 @@ app.get('/urls/:id', (req, res) => {
   const templateVars = {
     user: req.cookies['user_id'],
     id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id].longURL,
   };
   res.render('urls_show', templateVars);
 });
 app.get('/u/:id', (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   if (longURL === undefined) {
     throw new Error ('That short URL does not yet exist therefor it does not lead to anywhere');
   } else {
@@ -181,14 +169,12 @@ app.get('/u/:id', (req, res) => {
   }
 });
 app.post('/urls/:id/delete', (req, res) => {
-  console.log(req.body);
   delete urlDatabase[req.params.id];
   res.redirect('/urls');
 });
 app.post('/urls/:id/edit', (req, res) => {
   const shortURL = req.params.id;
-  console.log(req.body);
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL].longURL = req.body.longURL;
   res.redirect('/urls');
 });
 app.get('/urls/:id/edit', (req, res) => {
@@ -196,7 +182,7 @@ app.get('/urls/:id/edit', (req, res) => {
   const templateVars = {
     user: req.cookies['user_id'],
     id: shortURL, 
-    longURL: urlDatabase[shortURL]};
+    longURL: urlDatabase[shortURL].longURL};
   res.render('urls_show', templateVars);
 });
 app.get('/login', (req, res) => {
@@ -215,15 +201,9 @@ app.post('/register', (req, res) => {
   res.redirect('/urls/register');
 });
 app.post('/logout', (req, res) => {
-  //console.log(user);
   res.clearCookie('user_id');
   res.redirect('/login');
 });
-
-
-
-
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
