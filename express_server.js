@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 //----------------------------------------------------------generateRandomString function here
 const generateRandomString = () => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -13,11 +14,13 @@ const users = {
     id: "userRandomID",
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
+    //hashedpassword: bcrypt.hashSync(this.password, 10),
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk",
+    //hashedpassword: bcrypt.hashSync(this.password, 10),
   },
 };
 //----------------------------------------------------------emailChecker function here
@@ -42,7 +45,8 @@ const getUserFromEmail = (email) => {
 const accountchecker = (email, password) => {
   for (const user in users) {
     if (users[user].email === email) {
-      if (users[user].password === password) {
+      if (bcrypt.compareSync(password, users[user].hashedPassword) === true) {
+      // if (users[user].hashedPassword === bcrypt.hashSync(password, 10)) 
         return true;
       }
     }
@@ -55,6 +59,7 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080;
 app.set('view engine', 'ejs');
+
 
 //----------------------------------------------------------urlDataBase here
 const urlDatabase = {
@@ -160,7 +165,8 @@ app.post('/urls/register', (req, res) => {
     users[randomID] = {
       id: randomID,
       email: newUser.registeremailform,
-      password: newUser.registerpasswordform,
+      //password: newUser.registerpasswordform,
+      hashedPassword: bcrypt.hashSync(newUser.registerpasswordform, 10),
     };
     res.cookie('user_id', users[randomID]);
     res.redirect('/urls');
