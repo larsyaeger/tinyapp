@@ -55,7 +55,8 @@ const accountchecker = (email, password) => {
 };
 //----------------------------------------------------------Express + cookie + app + PORT stuff here
 const express = require('express');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
+//const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080;
 app.set('view engine', 'ejs');
@@ -85,10 +86,15 @@ const urlsForUser = (id) => {
   return userUrls;
 };
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['hello'],
+  maxAge: 24 * 60 * 60 * 1000,
+}));
+//app.use(cookieParser());
 //----------------------------------------------------------POST ('/urls') here
 app.post('/urls', (req, res) => {
-  let userID = req.cookies['user_id'].id;
+  let userID = req.session.user_id;
   let shortURL = generateRandomString();
   let longUrl = req.body.longURL;
   //if user is not logged in, respond with an html message they cant make a url because they need to be logged in 
@@ -114,11 +120,11 @@ app.get('/urls.json', (req, res) => {
 });
 //----------------------------------------------------------get ('/urls') here
 app.get('/urls', (req, res) => {
-  const loggedInUser = req.cookies['user_id'];
+  const loggedInUser = req.session.user_id;
   if (loggedInUser) {
-    const thisUsersUrls = urlsForUser(loggedInUser.id);
+    const thisUsersUrls = urlsForUser(loggedInUser);
     const templateVars = {
-      user: req.cookies['user_id'],
+      user: users[req.session.user_id],
       urls: thisUsersUrls,
       //urls: urlDatabase,        //-->Keep this here for debugging purposes
     };
@@ -130,9 +136,9 @@ app.get('/urls', (req, res) => {
 //----------------------------------------------------------get ('/urls/new') here
 app.get('/urls/new', (req, res) => {
   const templateVars = {
-    user: req.cookies['user_id'],
+    user: users[req.session.user_id],
   };
-  const loggedInUser = req.cookies['user_id'];
+  const loggedInUser = req.session.user_id;
   //if user is not logged in, any visits to /urls_new should be redirected to /login
   if (loggedInUser) {
     res.render('urls_new', templateVars);
@@ -143,9 +149,9 @@ app.get('/urls/new', (req, res) => {
 //----------------------------------------------------------get ('/urls/register') here
 app.get('/urls/register', (req, res) => {
   const templateVars = {
-    user: req.cookies['user_id'],
+    user: req.session.user_id,
   };
-  const loggedInUser = req.cookies['user_id'];
+  const loggedInUser = req.session.user_id;
   //if user is already logged in, any visits to /urls/register should be redirected to /urls
   if (loggedInUser) {
     res.redirect('/urls');
@@ -168,7 +174,8 @@ app.post('/urls/register', (req, res) => {
       //password: newUser.registerpasswordform,
       hashedPassword: bcrypt.hashSync(newUser.registerpasswordform, 10),
     };
-    res.cookie('user_id', users[randomID]);
+    req.session.user_id = randomID
+    //res.cookie('user_id', users[randomID]);
     res.redirect('/urls');
   }
 });
@@ -178,7 +185,8 @@ app.post('/login', (req, res) => {
   const loggedInUser = getUserFromEmail(possibleExistingUser.loginemailform);
   if (loggedInUser) {
     if (accountchecker(possibleExistingUser.loginemailform, possibleExistingUser.loginpasswordform) === true) {
-      res.cookie('user_id', loggedInUser);
+      req.session.user_id = loggedInUser.id;
+      //res.cookie('user_id', loggedInUser);
       res.redirect('/urls');
     } else if (accountchecker(possibleExistingUser.loginemailform, possibleExistingUser.loginpasswordform) === false) {
       throw new Error(`Error ${403}, password doesn't match for that email`);
@@ -194,11 +202,11 @@ app.post('/loginbutton', (req, res) => {
 });
 //----------------------------------------------------------get ('/urls/:id') here
 app.get('/urls/:id', (req, res) => {
-  const loggedInUser = req.cookies['user_id'];
-  const thisUsersUrls = urlsForUser(loggedInUser.id);
+  const loggedInUser = req.session.user_id;
+  const thisUsersUrls = urlsForUser(loggedInUser);
   const templateVars = {
-    user: req.cookies['user_id'],
-    userID: req.cookies['user_id'].id,
+    user: users[req.session.user_id],
+    userID: req.session.user_id,
     id: req.params.id,
     urls: thisUsersUrls,
     longURL: urlDatabase[req.params.id].longURL,
@@ -222,12 +230,12 @@ app.get('/u/:id', (req, res) => {
 });
 //----------------------------------------------------------POST ('/urls/:id/delete) here
 app.post('/urls/:id/delete', (req, res) => {
-  const loggedInUser = req.cookies['user_id'];
+  const loggedInUser = req.session.user_id;
   if (!loggedInUser) {
     res.send('Cannot delete link because you are not logged in');
   }
 
-  const thisUsersUrls = urlsForUser(loggedInUser.id);
+  const thisUsersUrls = urlsForUser(loggedInUser);
 
   if (!thisUsersUrls[req.params.id]) {
     //console.log(`INSIDE THE ERORR CONDITION`);
@@ -241,12 +249,12 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 //----------------------------------------------------------POST ('urls/:id/edit') here
 app.post('/urls/:id/edit', (req, res) => {
-  const loggedInUser = req.cookies['user_id'];
+  const loggedInUser = req.session.user_id;
   if (!loggedInUser) {
     res.send('Cannot edit link because you are not logged in');
   }
 
-  const thisUsersUrls = urlsForUser(loggedInUser.id);
+  const thisUsersUrls = urlsForUser(loggedInUser);
   if (!thisUsersUrls[req.params.id]) {
     res.send('Cannot edit this link because it was not created by you');
   } else if (!req.params.id) {
@@ -262,7 +270,7 @@ app.post('/urls/:id/edit', (req, res) => {
 app.get('/urls/:id/edit', (req, res) => {
   const shortURL = req.params.id;
   const templateVars = {
-    user: req.cookies['user_id'],
+    user: req.session.user_id,
     id: shortURL,
     longURL: urlDatabase[shortURL].longURL
   };
@@ -271,9 +279,9 @@ app.get('/urls/:id/edit', (req, res) => {
 //----------------------------------------------------------get ('/login') here
 app.get('/login', (req, res) => {
   const templateVars = {
-    user: req.cookies['user_id]'],
+    user: req.session.user_id,
   };
-  const loggedInUser = req.cookies['user_id'];
+  const loggedInUser = req.session.user_id;
   //if user is already logged in, any visits to /login should be redirected to /urls
   if (loggedInUser) {
     res.redirect('/urls');
@@ -287,7 +295,8 @@ app.post('/register', (req, res) => {
 });
 //----------------------------------------------------------POST ('/logout') here
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
+  //res.clearCookie('user_id');
   res.redirect('/login');
 });
 app.listen(PORT, () => {
