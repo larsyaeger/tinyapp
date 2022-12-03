@@ -59,7 +59,7 @@ app.set('view engine', 'ejs');
 
 
 
-//----------------------------------------------------------urlDataBase here
+//----------------------------------------------------------urlDataBase here, stored as objects within objects
 const urlDatabase = {
   b2xVn2: {
     longURL: 'http://www.lighthouselabs.ca',
@@ -70,7 +70,7 @@ const urlDatabase = {
     userID: 'user2RandomID',
   },
 };
-//----------------------------------------------------------urlsForUser function here
+//----------------------------------------------------------urlsForUser function here, passing on an id will check which urls in the database + memory are assigned to that user
 const urlsForUser = (id) => {
   const userUrls = {};
   for (let shortUrls in urlDatabase) {
@@ -81,6 +81,7 @@ const urlsForUser = (id) => {
   return userUrls;
 };
 app.use(express.urlencoded({ extended: true }));
+//----------------------------------------------------------fancy sneaky cookies for security and privacy
 app.use(cookieSession({
   name: 'session',
   keys: ['hello'],
@@ -164,11 +165,11 @@ app.post('/urls/register', (req, res) => {
     users[randomID] = {
       id: randomID,
       email: newUser.registeremailform,
-      //password: newUser.registerpasswordform,
+      //password: newUser.registerpasswordform,<----left here for debugging
       hashedPassword: bcrypt.hashSync(newUser.registerpasswordform, 10),
     };
-    req.session.user_id = randomID
-    //res.cookie('user_id', users[randomID]);
+    req.session.user_id = randomID;
+    //res.cookie('user_id', users[randomID]);<---left here for debugging
     res.redirect('/urls');
   }
 });
@@ -179,7 +180,6 @@ app.post('/login', (req, res) => {
   if (loggedInUser) {
     if (accountchecker(possibleExistingUser.loginemailform, possibleExistingUser.loginpasswordform) === true) {
       req.session.user_id = loggedInUser.id;
-      //res.cookie('user_id', loggedInUser);
       res.redirect('/urls');
     } else if (accountchecker(possibleExistingUser.loginemailform, possibleExistingUser.loginpasswordform) === false) {
       throw new Error(`Error ${403}, password doesn't match for that email`);
@@ -187,7 +187,7 @@ app.post('/login', (req, res) => {
   } else if (emailChecker(possibleExistingUser.loginemailform) === false) {
     throw new Error(`Error ${403}, email isn't registered to an account`);
   }
-  //res.redirect('/login');
+  //res.redirect('/login');<---- left for easy debugging
 });
 //----------------------------------------------------------POST ('/loginbutton') here
 app.post('/loginbutton', (req, res) => {
@@ -231,7 +231,6 @@ app.post('/urls/:id/delete', (req, res) => {
   const thisUsersUrls = urlsForUser(loggedInUser);
 
   if (!thisUsersUrls[req.params.id]) {
-    //console.log(`INSIDE THE ERORR CONDITION`);
     res.send('Cannot delete this link because it was not created by you');
   } else if (!req.params.id) {
     res.send(`Cannot delete a link that doesn't exist`);
@@ -289,7 +288,7 @@ app.post('/register', (req, res) => {
 //----------------------------------------------------------POST ('/logout') here
 app.post('/logout', (req, res) => {
   req.session = null;
-  //res.clearCookie('user_id');
+  //res.clearCookie('user_id');<----left for easy debugging
   res.redirect('/login');
 });
 app.listen(PORT, () => {
