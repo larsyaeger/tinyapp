@@ -14,13 +14,11 @@ const users = {
     id: "userRandomID",
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
-    //hashedpassword: bcrypt.hashSync(this.password, 10),
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk",
-    //hashedpassword: bcrypt.hashSync(this.password, 10),
   },
 };
 //----------------------------------------------------------emailChecker function here
@@ -46,7 +44,6 @@ const accountchecker = (email, password) => {
   for (const user in users) {
     if (users[user].email === email) {
       if (bcrypt.compareSync(password, users[user].hashedPassword) === true) {
-      // if (users[user].hashedPassword === bcrypt.hashSync(password, 10)) 
         return true;
       }
     }
@@ -56,10 +53,10 @@ const accountchecker = (email, password) => {
 //----------------------------------------------------------Express + cookie + app + PORT stuff here
 const express = require('express');
 const cookieSession = require('cookie-session');
-//const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080;
 app.set('view engine', 'ejs');
+
 
 
 //----------------------------------------------------------urlDataBase here
@@ -72,8 +69,6 @@ const urlDatabase = {
     longURL: 'http://www.google.com',
     userID: 'user2RandomID',
   },
-  //  'b2xVn2': 'http://www.lighthouselabs.ca',
-  //  '9sm5xK': 'http://www.google.com',
 };
 //----------------------------------------------------------urlsForUser function here
 const urlsForUser = (id) => {
@@ -91,13 +86,11 @@ app.use(cookieSession({
   keys: ['hello'],
   maxAge: 24 * 60 * 60 * 1000,
 }));
-//app.use(cookieParser());
 //----------------------------------------------------------POST ('/urls') here
 app.post('/urls', (req, res) => {
   let userID = req.session.user_id;
   let shortURL = generateRandomString();
   let longUrl = req.body.longURL;
-  //if user is not logged in, respond with an html message they cant make a url because they need to be logged in 
   if (userID) {
     urlDatabase[shortURL] = {
       longURL: longUrl,
