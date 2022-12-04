@@ -26,4 +26,4 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Extra notes:
 
-This was a pain in the ass
+This was fun
